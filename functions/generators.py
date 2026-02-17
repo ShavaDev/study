@@ -56,8 +56,18 @@
 def factorial(n):
     pr = 1
     for i in range(1, n + 1):
+        print("Пришли наверх, дойдем до генератора, выдадим значение и остановимся")
         pr *= i
         yield pr
+        print("Продолжаем функцию после генератора и пойдем сразу наверх")
+
+ans = factorial(5)
+print(next(ans))
+print(next(ans))
+print(next(ans))
+print(next(ans))
+print(next(ans))
+
 
 for i in factorial(10):
     print(i, end=" ")
