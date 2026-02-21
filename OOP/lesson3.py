@@ -46,3 +46,6 @@ class Point:
 pt = Point(1, 2)
 # pt.set_coords(1, 2)
 print(pt.__dict__)
+cs = pt
+del pt
+# print(pt) # выйдет ошибка
