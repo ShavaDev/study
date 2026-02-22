@@ -31,3 +31,6 @@ p.age = 35
 del p.age
 p.age = 15
 print(p.__dict__)
+
+# import pprint
+# pprint.pprint(locals())
