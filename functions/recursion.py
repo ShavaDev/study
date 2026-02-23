@@ -224,7 +224,7 @@ Python просто читает верхнюю записку и продолж
 # обход файлов
 # import os
 #
-# path = "C:\\Users"
+# path = r"C:\\Users"
 #
 #
 # def obxodFile(p, level=1):

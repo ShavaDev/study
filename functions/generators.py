@@ -29,6 +29,7 @@
 
 """
 
+
 # a = [i**2 for i in range(1,6)] # генератор списка
 #
 # b = (i**2 for i in range(1, 6)) # выражение-генератор
@@ -61,6 +62,7 @@ def factorial(n):
         yield pr
         print("Продолжаем функцию после генератора и пойдем сразу наверх")
 
+
 ans = factorial(5)
 print(next(ans))
 print(next(ans))
@@ -68,8 +70,41 @@ print(next(ans))
 print(next(ans))
 print(next(ans))
 
-
 for i in factorial(10):
     print(i, end=" ")
 
 
+# функция генератор, которая обходит файл и ищет конкретно определенное слово, то есть какой индекс имеет данное слово, когда найдем его
+def find_word(file, word):
+    """
+    Мы здесь в первом цикле читаем файл по строкам. Во втором вложенном цикле while ищем указанное слово в строке,
+    используя метод find(). И, если этот метод находит заданный фрагмент, то есть,
+    возвращает значение больше -1, то функция генерирует на выходе значение индекса найденного слова как g_index + index.
+    Здесь g_index – это смещение по тексту для текущей строки, то есть, в ней мы суммируем длины предыдущих строк,
+    чтобы сформировать индекс слова в тексте, а не в строке.
+    index определяет индекс вхождения данного слова в эту строку
+    :param file:
+    :param word:
+    :return:
+    """
+    g_index = 0
+    for line in file:
+        index = 0
+        while index != -1:
+            index = line.find(word, index)
+            if index > -1:
+                yield g_index + index
+            index += 1
+        g_index += len(line)
+
+
+try:
+    with open("words.txt") as f:
+        a = find_word(f, "генератор")
+        print(list(a))
+except FileNotFoundError:
+    print("file not found")
+except:
+    print("error")
+finally:
+    print(f.closed)
