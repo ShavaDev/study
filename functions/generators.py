@@ -108,3 +108,48 @@ except:
     print("error")
 finally:
     print(f.closed)
+
+
+# задача со степика
+from string import ascii_lowercase
+
+letters = ascii_lowercase
+gen = (
+    a + b
+    for a in letters
+    for b in letters
+)
+print(*[next(gen) for _ in range(50)])
+
+# еще одна задачка
+cities = ["Москва", "Ульяновск", "Самара", "Уфа", "Омск", "Тула"]
+gen = (
+    cities[i%len(cities)] for i in range(1_000_000)
+)
+for _ in range(20):
+    print(next(gen), end=" ")
+
+
+# еще одна задачка
+import random
+from string import ascii_lowercase, ascii_uppercase
+
+# установка зерна датчика случайных чисел (не менять)
+random.seed(1)
+
+N = int(input())
+
+chars = ascii_lowercase + ascii_uppercase + "0123456789!?@#$*"
+
+def generator(N):
+    while True:                     # генератор БЕСКОНЕЧНЫЙ
+        password = ""
+        for _ in range(N):
+            indx = random.randint(0, len(chars) - 1)
+            password += chars[indx]
+        yield password              # каждый раз новый пароль
+
+gen = generator(N)
+
+for _ in range(5):
+    print(next(gen))
