@@ -5,6 +5,8 @@ __add__() – для операции сложения;
 __sub__() – для операции вычитания;
 __mul__() – для операции умножения;
 __truediv__() – для операции деления.
+__floordiv__() - для целочисленного деления
+__mod__() - для деления получения остатка
 
 Если же нам понадобиться изменить время в объекте c1, то сейчас это можно сделать через локальное свойство seconds:
 c1.seconds = c1.seconds + 100
@@ -23,7 +25,8 @@ c1 = c1 + 100
 На прежний уже не будет никаких внешних ссылок, поэтому он будет автоматически удален сборщиком мусора.
 
 Вас может удивить сложность процессов, когда нам всего лишь нужно прибавить 100 секунд к уже имеющемуся значению.
-Но эта сложность оправданна. Чтобы это понять, мы расширим функционал оператора сложения и допустим, что можно складывать два разных объекта класса Clock, следующим образом:
+Но эта сложность оправданна. Чтобы это понять, мы расширим функционал оператора сложения и допустим,
+что можно складывать два разных объекта класса Clock, следующим образом:
 c1 = Clock(1000)
 c2 = Clock(2000)
 c3 = c1 + c2
@@ -80,6 +83,9 @@ c1 += 100
 
 """
 
+from __future__ import annotations # для аннотации типов данных
+from typing import Self # когда функция возвращает у меня обновленный объект класса
+
 class Clock:
     """
     при реализации _add_ лучше обращаться к своему классу через self.__class__, а не напрямую через название Clock.
@@ -87,12 +93,12 @@ class Clock:
     """
     __DAY = 86400
 
-    def __init__(self, seconds: int):
+    def __init__(self, seconds: int) -> None:
         if not isinstance(seconds, int):
             raise TypeError("Секунды должны быть целым числом!")
         self.seconds = seconds % self.__DAY
 
-    def get_time(self):
+    def get_time(self) -> str:
         s = self.seconds % 60
         m = (self.seconds // 60) % 60
         h = (self.seconds // 3600) % 24
@@ -117,7 +123,7 @@ class Clock:
     def __get_formated(cls, x: int) -> str:
         return str(x).rjust(2, "0")
 
-    def __add__(self, other: int):
+    def __add__(self, other: int) -> Clock:
         # if not isinstance(other, (int, Clock)):
         #     raise ArithmeticError("Правый операнд должен быть целым числом!")
         # sc = other
@@ -129,7 +135,7 @@ class Clock:
         # return Clock(self.seconds + sc)
         return self.__class__(self.seconds + sc)
 
-    def __radd__(self, other: int):
+    def __radd__(self, other: int) -> Clock:
         """
         Почему мы пишем return self + other?
         Это пример повторного использования кода.
@@ -153,7 +159,7 @@ class Clock:
         """
         return self + other
 
-    def __iadd__(self, other: int):
+    def __iadd__(self, other: int) -> Self:
         """
         Метод возвращает ОБЪЕКТ, а не число
         Когда ты пишешь c1 += 5, Python ожидает, что результатом этой операции будет объект класса Clock,
@@ -178,25 +184,97 @@ class Clock:
         print(f"{self}")
         return self
 
-    def __sub__(self, other: int):
+    def __sub__(self, other: int) -> Clock:
         """
         Вычитание
         :param other:
         :return:
         """
+        print("__sub__")
+
         sc = self.pattern_func(other)
 
         return self.__class__(self.seconds - sc)
 
+    def __rsub__(self, other: int) -> Clock:
+        """
+        Математика вычитания некоммутативна. Это значит, что A - B не равно B - A.
+        В методах с приставкой r (right), где операция несимметрична (вычитание, деление),
+        мы не можем просто перебросить вызов на self - other. Нам нужно явно прописать правильный порядок
+        :param other:
+        :return:
+        """
+        print("__rsub__")
 
-c1 = Clock(1000)
-# c1.seconds += 100
-# c1 += 100
-c2 = Clock(10)
-# c3 = c1 + c2
-c3 = c2 - 20
-print(c3.get_time())
-# c3 = Clock(3000)
-# c4 = c1 + c2 + c3
-# c1 = 100 + c1
-# print(c4.get_time())
+        sc = self.pattern_func(other)
+
+        return self.__class__(sc - self.seconds)
+
+    def __isub__(self, other: int) -> Self:
+        print("__isub__")
+
+        sc = self.pattern_func(other)
+
+        self.seconds -= sc
+
+        return self
+
+    def __mul__(self, other: int) -> Clock:
+        """
+        умножение
+        :param other:
+        :return:
+        """
+        print("__mul__")
+
+        sc = self.pattern_func(other)
+
+        return self.__class__(self.seconds * sc)
+
+    def __rmul__(self, other: int) -> Clock:
+        print("__rmul__")
+
+        sc = self.pattern_func(other)
+
+        return self * sc
+
+    def __imul__(self, other: int) -> Self:
+        print("__imul__")
+
+        sc = self.pattern_func(other)
+
+        self.seconds *= sc
+
+        return self
+
+    def __truediv__(self, other: int) -> Clock:
+        print("__truediv__")
+
+        sc = self.pattern_func(other)
+
+        return self.__class__(self.seconds / sc)
+
+    def __rtruediv__(self, other: int) -> Clock:
+        """
+        В методах с приставкой r (right), где операция несимметрична (вычитание, деление),
+        мы не можем просто перебросить вызов на self - other. Нам нужно явно прописать правильный порядок
+        :param other:
+        :return:
+        """
+        print("__rtruediv__")
+
+        sc = self.pattern_func(other)
+
+        return self.__class__(sc / self.seconds )
+
+    def __itruediv__(self, other: int) -> Self:
+        print("__itruediv__")
+
+        sc = self.pattern_func(other)
+
+        self.seconds /= sc
+
+        return self
+
+
+## снизу можно свои тесты делать
