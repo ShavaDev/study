@@ -33,11 +33,17 @@ class Point:
         self.__coordinates = args
 
     def __len__(self):
-        return len(self.__coordinates)
+        """
+        метод __len__ обязан возвращать целое число (integer), которое больше или равно нулю.
+        :return:
+        """
+        # return len(self.__coordinates)
+        ans = [i**2 for i in self.__coordinates]
+        return max(ans)
 
     def __abs__(self):
         return list(map(abs, self.__coordinates))
 
-point = Point(-1, 2)
+point = Point(-1, 2, 3, 4)
 print(len(point))
 print(abs(point))
