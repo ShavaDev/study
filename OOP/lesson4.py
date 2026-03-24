@@ -54,6 +54,61 @@ __init__ нужен для того, чтобы объект «родился» 
 
 
 Конструктор в Python — это процесс, состоящий из двух этапов: выделение памяти (__new__) и наполнение данными (__init__).
+------------------------------------------------------------------------------------------------------------------------
+
+REAL SINGLETON
+______________
+import copy
+
+class DataBase:
+    __instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super().__new__(cls)
+        return cls.__instance
+
+    def __init__(self, user, password, port):
+        # Если нужно, чтобы данные НЕ перезаписывались при db2 = DataBase(...):
+        if not hasattr(self, 'initialized'):
+            self.user = user
+            self.password = password
+            self.port = port
+            self.initialized = True
+        # Если УДАЛИТЬ это условие, то каждый новый вызов DataBase()
+        # будет обновлять user/password у единственного объекта.
+
+    # Защита от создания копий (всегда возвращаем тот же адрес памяти)
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo): # добавили memo для корректности
+        return self
+
+    # Контекстный менеджер (замена __del__)
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def connect(self):
+        print(f"Подключено: {self.user}@{self.port}")
+
+    def close(self):
+        print("Соединение закрыто")
+
+# Пример использования
+db = DataBase("admin", "123", 5432)
+db_copy = copy.deepcopy(db)
+
+print(db is db_copy) # True (это буквально один объект)
+
+with DataBase("admin", "123", 5432) as db_session:
+    print(db_session.read())
+# Здесь соединение закроется автоматически
+
 
 """
 
@@ -114,7 +169,7 @@ class DataBase:
 
         return cls.__instance
 
-    def __del__(self):
+    def __del__(self): # лучше вместо него использовать контекстный менеджер __enter__/__exit__
         """
         магический метод – финализатор __del__, который будет обнулять атрибут __instance перед уничтожением объекта,
         чтобы мы могли, при необходимости, создать новый.
@@ -126,6 +181,14 @@ class DataBase:
         self.user = user
         self.password = password
         self.port = port
+
+    # Блокируем создание поверхностной копии
+    def __copy__(self):
+        return self # Возвращаем тот же самый объект id(db) == id(copy_db)
+
+    # Блокируем создание глубокой копии
+    def __deepcopy__(self):
+        return self # Возвращаем тот же самый объект id(db) == id(copy_db)
 
     def connect(self):
         print(f"Соединение с БД: {self.user}, {self.password}, {self.port}")
