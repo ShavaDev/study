@@ -18,7 +18,12 @@ class Substance:
     boiling_point: float = 0  # температура кипения
 
     def __post_init__(self) -> None:
-        self.name = self.name
+        """
+        Все будет работать и без этого метода, он для надежности, так как сеттер уже выполнился внутри инициализатора
+        в декораторе датакласс, то ест по факту именно здесь __post_init__ не нужен столь сильно
+        :return:
+        """
+        self.name = self.name # слева срабатывает сеттер, а справа геттер
         self.density = self.density
 
     @property
@@ -44,6 +49,7 @@ class Substance:
         self._name = value
 
 
+# Дескриптор
 class TemperatureControlled:
     def __set__(self, instance: Container, value: int | float) -> None:
         if not isinstance(value, (int, float)):
@@ -61,7 +67,7 @@ class TemperatureControlled:
             print(f"Temperature set to {value}°C")
             instance._current_temp = value
 
-    def __get__(self, instance, owner):
+    def __get__(self, instance, owner) -> float:
         return getattr(instance, '_current_temp', 20.0)
 
 
@@ -81,7 +87,7 @@ class Container:
         self.meta = self.Meta(owner=self, material=material, last_serviced=datetime.now())
 
     @property
-    def current_weight(self):
+    def current_weight(self) -> float:
         return self._substance.density * self._volume
 
     def __add__(self, other: Container) -> Container:
@@ -95,18 +101,18 @@ class Container:
         if new_volume > self.MAX_VOLUME:
             raise ValueError("Volume cannot be greater than {}".format(self.MAX_VOLUME))
 
-        return Container(volume=new_volume, substance=self._substance)
+        return Container(volume=new_volume, substance=self._substance, material=self.meta._material)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self._substance.name}, vol: {self._volume}, weight: {self.current_weight})"
 
     class Meta:
-        def __init__(self, owner: Container, material: str, last_serviced: datetime):
+        def __init__(self, owner: Container, material: str, last_serviced: datetime) -> None:
             self._owner = owner
             self._material = material
             self._last_serviced = last_serviced
 
-        def get_info(self):
+        def get_info(self) -> str:
             return f"Контейнер из {self._material}, внутри {self._owner._substance.name}"
 
 
